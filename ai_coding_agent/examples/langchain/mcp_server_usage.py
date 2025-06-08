@@ -2,15 +2,12 @@ from langchain.tools import BaseTool
 from typing import Type, ClassVar, Dict, Any
 from pydantic import BaseModel, Field
 import json
-import requests
 import httpx
 from langchain_ollama import OllamaLLM
 from langchain.agents import AgentExecutor, AgentType, initialize_agent
-from langchain.prompts import MessagesPlaceholder
 from langchain.memory import ConversationBufferMemory
 from langchain.schema import SystemMessage
 import sys
-from sseclient import SSEClient
 import asyncio
 from mcp_sse_client import MCPClient
 
@@ -174,15 +171,6 @@ agent = initialize_agent(
 ✅ COMPLETE EXAMPLE:
 User: List the contents of the current directory
 Assistant: I'll use the list_dir tool to show the contents of the current directory.
-- Tool: list_dir
-  Description: List directory contents.
-  Parameters:
-    - directory_path (string, **required**)
-    - sort_by (string, optional)
-    - sort_order (string, optional)
-Since directory_path marked as **required** - we must provide it.
-
-Valid generated tool calls:
 {
     "tool_name": "list_dir",
     "parameters": {
@@ -270,7 +258,7 @@ if __name__ == "__main__":
         # Now try through the agent - this should now work!
         print("\nTrying through agent...")
         response = agent.invoke({
-            "input": "Show contents of / folder using list_dir tool. Retrieve information from the tool, parse JSON, print <type> <name> pair per line"
+            "input": "List the contents of the current directory using the list_dir tool. Use '.' for the directory path."
         })
 
         print("\n=== FINAL RESULT ===")
