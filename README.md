@@ -45,116 +45,54 @@ class MCPToolInput(BaseModel):
 - Custom system message for proper tool usage
 - Optimized for local execution
 
+## Available Tools
+
+| Tool Name | Category | Description |
+|-----------|----------|-------------|
+| `list_dir` | File System | Lists contents of a directory with sorting and filtering options |
+| `read_file` | File System | Reads and returns the contents of a file |
+| `edit_file` | File System | Makes changes to a file with proper context preservation |
+| `grep_search` | File System | Performs fast text-based regex search across files |
+| `file_search` | File System | Fuzzy file search based on path patterns |
+| `delete_file` | File System | Safely deletes files with proper error handling |
+| `view_code` | Code Analysis | Analyzes and returns information about code structure |
+| `view_file` | Code Analysis | Provides detailed view of file contents with metadata |
+| `propose_code` | Code Analysis | Suggests code improvements and modifications |
+| `code_navigation` | LSP | Navigates through code structure using LSP capabilities |
+| `symbol_info` | LSP | Retrieves detailed information about code symbols |
+| `semantic_search` | LSP | Performs semantic code search using LSP features |
+| `push_action` | Control | Adds a new action to the execution queue |
+| `clear_actions` | Control | Clears all pending actions from the queue |
+| `get_next_action` | Control | Retrieves the next action to be executed |
+| `show_actions` | Control | Displays all pending actions in the queue |
+
+Each tool is designed to work locally and can be used in combination to perform complex development tasks. The tools are organized into four main categories:
+
+1. **File System Tools**
+   - Basic file operations (list, read, edit, delete)
+   - Search capabilities (grep, fuzzy search)
+   - All operations maintain local file system integrity
+
+2. **Code Analysis Tools**
+   - Code structure analysis
+   - File content analysis
+   - Code improvement suggestions
+   - Maintains code quality standards
+
+3. **LSP (Language Server Protocol) Tools**
+   - Advanced code navigation
+   - Symbol information retrieval
+   - Semantic code search
+   - Language-aware operations
+
+4. **Control Tools**
+   - Action queue management
+   - Execution flow control
+   - Task scheduling
+   - Workflow orchestration
+
+For detailed parameter information and usage examples, use the MCP Inspector tool.
+
 ## Usage Example
 
-```python
-# Initialize the agent
-agent = initialize_agent(
-    tools=[CustomMCPTool()],
-    llm=OllamaLLM(model="gemma3"),  # Local LLM
-    agent=AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION,
-    verbose=True
-)
-
-# Execute a tool
-response = agent.invoke({
-    "input": "List the contents of the current directory"
-})
 ```
-
-## Tool Call Format
-
-The agent must format tool calls exactly as follows:
-```json
-{
-    "tool_name": "list_dir",
-    "parameters": {
-        "directory_path": ".",
-        "sort_by": "name",
-        "sort_order": "asc"
-    }
-}
-```
-
-## Important Rules
-
-1. Tool calls must be direct dictionaries with `tool_name` and `parameters` keys
-2. All required parameters must be included
-3. Parameter names must match exactly (e.g., `directory_path` not `path`)
-4. Use "." for current directory paths
-5. Always check tool descriptions for required parameters
-
-## Error Handling
-
-The integration includes robust error handling for:
-- Invalid parameter formats
-- Missing required parameters
-- Server connection issues
-- Tool execution errors
-- Local resource constraints
-
-## Development
-
-To run the example:
-1. Start the local MCP server:
-```bash
-python examples/mcp/server_example.py
-```
-It will listen on http://localhost:8000/sse
-
-You can test it using https://github.com/modelcontextprotocol/inspector
-Use Tools->List Tools after connection.
-You can call any method providing valid parameter.
-
-2. Run the client example:
-```bash
-python examples/langchain/mcp_server_usage.py
-```
-For now it just attempts to call list_dir and print list of files:
-- Direct MCP call (using SSE client)
-- From selected LLM (I use ollama with gemma3 model for testing)
-
-## SDLC Integration
-
-The agent is designed to be integrated into various SDLC stages:
-
-### 1. Development
-- Code generation and completion
-- Refactoring assistance
-- Documentation generation
-- Test case creation
-
-### 2. Code Review
-- Static analysis
-- Best practice checking
-- Security vulnerability scanning
-- Performance optimization suggestions
-
-### 3. Testing
-- Test case generation
-- Test coverage analysis
-- Test result interpretation
-- Test optimization
-
-### 4. Deployment
-- Configuration validation
-- Environment setup
-- Deployment script generation
-- Rollback planning
-
-## Security and Privacy
-
-- All processing happens locally
-- No code or data is sent to external servers
-- Supports air-gapped environments
-- Maintains code confidentiality
-- Compliant with strict security requirements
-
-## Notes
-
-- The agent uses the ReAct format (Reason + Act) for structured responses
-- Tool parameters are validated against the MCPToolInput schema
-- The system message enforces proper tool call formatting
-- Debug logging is available for troubleshooting
-- Designed for offline-first operation
-- Supports integration with local development tools 
