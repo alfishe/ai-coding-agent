@@ -1,19 +1,40 @@
-"""Core functionality for the AI Coding Agent Toolset."""
+"""Core tools for the AI Coding Agent."""
 
-from .base import BaseTool, ToolParameter, ToolResult
-from .file_system import ListDirectoryTool, FindByNameTool, GrepSearchTool
-from .web import WebSearchTool, ReadUrlContentTool
+# Import base classes first to avoid circular imports
+from .base import BaseTool, ToolResult
+
+# File System Tools
+from .file_system import (
+    ListDirectoryTool,
+    ReadFileTool,
+    EditFileTool,
+    DeleteFileTool,
+    GrepSearchTool,
+    FileSearchTool
+)
+
+# Web Tools
+from .web import (
+    WebSearchTool,
+    ReadUrlTool
+)
+
+# Code Modification Tools
 from .code_modification import (
     ProposeCodeTool,
-    ViewCodeItemTool,
+    ViewCodeTool,
     ViewFileTool
 )
-from .lsp_tools import (
+
+# LSP Tools
+from .lsp import (
     SemanticSearchTool,
     SymbolInfoTool,
     CodeNavigationTool
 )
-from .control_tools import (
+
+# Control Tools
+from .control import (
     PushActionTool,
     ShowActionsTool,
     GetNextActionTool,
@@ -21,20 +42,33 @@ from .control_tools import (
 )
 
 __all__ = [
+    # Base Classes
     "BaseTool",
-    "ToolParameter",
     "ToolResult",
+    
+    # File System Tools
     "ListDirectoryTool",
-    "FindByNameTool",
+    "ReadFileTool",
+    "EditFileTool",
+    "DeleteFileTool",
     "GrepSearchTool",
+    "FileSearchTool",
+    
+    # Web Tools
     "WebSearchTool",
-    "ReadUrlContentTool",
+    "ReadUrlTool",
+    
+    # Code Modification Tools
     "ProposeCodeTool",
-    "ViewCodeItemTool",
+    "ViewCodeTool",
     "ViewFileTool",
+    
+    # LSP Tools
     "SemanticSearchTool",
     "SymbolInfoTool",
     "CodeNavigationTool",
+    
+    # Control Tools
     "PushActionTool",
     "ShowActionsTool",
     "GetNextActionTool",

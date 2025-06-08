@@ -1,72 +1,100 @@
-from typing import Any, Dict, List, Optional, Type
+"""LangChain interface for the AI Coding Agent."""
 
+from typing import List, Dict, Any, Optional
+from pydantic import BaseModel, Field
 from langchain.tools import BaseTool as LangChainBaseTool
-from langchain.tools.base import ToolException
 
 from ..core.base import BaseTool
-from ..core.file_system import ListDirectoryTool, FindByNameTool, GrepSearchTool
-from ..core.web import WebSearchTool, ReadUrlContentTool
-from ..core.code_modification import (
-    ProposeCodeTool,
-    ViewCodeItemTool,
-    ViewFileTool
-)
-
+from ..core.file_system import ListDirectoryTool, FileSearchTool, GrepSearchTool
+from ..core.web import WebSearchTool, ReadUrlTool
+from ..core.code_modification import ProposeCodeTool, ViewCodeTool, ViewFileTool
+from ..core.lsp import SemanticSearchTool, SymbolInfoTool, CodeNavigationTool
+from ..core.control import PushActionTool, ShowActionsTool, GetNextActionTool, ClearActionsTool
 
 class AICodingAgentToolkit:
-    """Toolkit for using AI Coding Agent tools with LangChain."""
+    """Toolkit for integrating AI Coding Agent tools with LangChain."""
     
     def __init__(self):
-        self._tools: Dict[str, BaseTool] = {
-            tool.name: tool()
-            for tool in [
-                ListDirectoryTool,
-                FindByNameTool,
-                GrepSearchTool,
-                WebSearchTool,
-                ReadUrlContentTool,
-                ProposeCodeTool,
-                ViewCodeItemTool,
-                ViewFileTool
-            ]
-        }
-    
-    def get_tools(self) -> List[LangChainBaseTool]:
-        """Convert internal tools to LangChain tools."""
+        """Initialize the toolkit."""
+        self.tools = self._create_tools()
+        
+    def _create_tools(self) -> List[LangChainBaseTool]:
+        """Create LangChain tools from AI Coding Agent tools.
+        
+        Returns:
+            List of LangChain tools
+        """
+        # Convert AI Coding Agent tools to LangChain tools
         return [
-            self._create_langchain_tool(tool)
-            for tool in self._tools.values()
+            self._convert_tool(ListDirectoryTool()),
+            self._convert_tool(FileSearchTool()),
+            self._convert_tool(GrepSearchTool()),
+            self._convert_tool(WebSearchTool()),
+            self._convert_tool(ReadUrlTool()),
+            self._convert_tool(ProposeCodeTool()),
+            self._convert_tool(ViewCodeTool()),
+            self._convert_tool(ViewFileTool()),
+            self._convert_tool(SemanticSearchTool()),
+            self._convert_tool(SymbolInfoTool()),
+            self._convert_tool(CodeNavigationTool()),
+            self._convert_tool(PushActionTool()),
+            self._convert_tool(ShowActionsTool()),
+            self._convert_tool(GetNextActionTool()),
+            self._convert_tool(ClearActionsTool())
         ]
-    
-    def _create_langchain_tool(self, tool: BaseTool) -> LangChainBaseTool:
-        """Convert an internal tool to a LangChain tool."""
+        
+    def _convert_tool(self, tool: BaseTool) -> LangChainBaseTool:
+        """Convert an AI Coding Agent tool to a LangChain tool.
+        
+        Args:
+            tool: AI Coding Agent tool to convert
+            
+        Returns:
+            LangChain tool
+        """
+        # Create a Pydantic model for the tool's arguments
+        args_schema_class = type(
+            f'{tool.name.capitalize()}Arguments',
+            (BaseModel,),
+            {
+                '__annotations__': {
+                    param.name: (str if param.type == "string" else bool, Field(
+                        description=param.description,
+                        required=param.required
+                    ))
+                    for param in tool.parameters
+                }
+            }
+        )
         
         class LangChainTool(LangChainBaseTool):
-            name: str = "your_tool_name"
+            name = tool.name
             description = tool.description
+            args_schema = args_schema_class
             
-            def _run(self, **kwargs: Any) -> Any:
-                try:
-                    # Convert sync to async execution
-                    import asyncio
-                    result = asyncio.run(tool.execute(**kwargs))
+            def _run(self, **kwargs) -> str:
+                """Run the tool.
+                
+                Args:
+                    **kwargs: Tool arguments
                     
-                    if not result.success:
-                        raise ToolException(result.error)
+                Returns:
+                    Tool result as string
+                """
+                import asyncio
+                result = asyncio.run(tool.execute(**kwargs))
+                return str(result.data if result.success else result.error)
+                
+            async def _arun(self, **kwargs) -> str:
+                """Run the tool asynchronously.
+                
+                Args:
+                    **kwargs: Tool arguments
                     
-                    return result.data
-                except Exception as e:
-                    raise ToolException(str(e))
-            
-            def _arun(self, **kwargs: Any) -> Any:
-                try:
-                    result = asyncio.run(tool.execute(**kwargs))
-                    
-                    if not result.success:
-                        raise ToolException(result.error)
-                    
-                    return result.data
-                except Exception as e:
-                    raise ToolException(str(e))
-        
+                Returns:
+                    Tool result as string
+                """
+                result = await tool.execute(**kwargs)
+                return str(result.data if result.success else result.error)
+                
         return LangChainTool() 

@@ -6,32 +6,32 @@ This module provides easy access to all tools available in the AI Coding Agent t
 # File System Tools
 from ..core.file_system import (
     ListDirectoryTool,
-    FindByNameTool,
+    FileSearchTool,
     GrepSearchTool
 )
 
 # Web Tools
 from ..core.web import (
     WebSearchTool,
-    ReadUrlContentTool
+    ReadUrlTool
 )
 
 # Code Modification Tools
 from ..core.code_modification import (
     ProposeCodeTool,
-    ViewCodeItemTool,
+    ViewCodeTool,
     ViewFileTool
 )
 
 # LSP Tools
-from ..core.lsp_tools import (
+from ..core.lsp import (
     SemanticSearchTool,
     SymbolInfoTool,
     CodeNavigationTool
 )
 
 # Control Tools
-from ..core.control_tools import (
+from ..core.control import (
     PushActionTool,
     ShowActionsTool,
     GetNextActionTool,

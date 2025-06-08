@@ -7,23 +7,22 @@ from mcp.server.sse import SseServerTransport
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.routing import Mount, Route
-from mcp.server import Server
 import uvicorn
 
 from ..core.base import BaseTool
-from ..core.file_system import ListDirectoryTool, FindByNameTool, GrepSearchTool
-from ..core.web import WebSearchTool, ReadUrlContentTool
+from ..core.file_system import ListDirectoryTool, GrepSearchTool
+from ..core.web import WebSearchTool, ReadUrlTool
 from ..core.code_modification import (
     ProposeCodeTool,
-    ViewCodeItemTool,
+    ViewCodeTool,
     ViewFileTool
 )
-from ..core.lsp_tools import (
+from ..core.lsp import (
     SemanticSearchTool,
     SymbolInfoTool,
     CodeNavigationTool
 )
-from ..core.control_tools import (
+from ..core.control import (
     PushActionTool,
     ShowActionsTool,
     GetNextActionTool,
@@ -34,6 +33,8 @@ from ..core.control_tools import (
 # File System Tool Models
 class ListDirectoryRequest(BaseModel):
     directory_path: str = Field(..., description="Path to the directory to list")
+    include_pattern: Optional[str] = Field(None, description="Glob pattern for files to include")
+    exclude_pattern: Optional[str] = Field(None, description="Glob pattern for files to exclude")
     sort_by: str = Field("name", description="Field to sort by (name, type, size, modified)")
     sort_order: str = Field("asc", description="Sort order (asc, desc)")
 
@@ -41,6 +42,8 @@ class ListDirectoryRequest(BaseModel):
         json_schema_extra = {
             "example": {
                 "directory_path": ".",
+                "include_pattern": "*.txt",
+                "exclude_pattern": "*.py",
                 "sort_by": "type",
                 "sort_order": "asc"
             }
@@ -294,15 +297,26 @@ class MCPServer:
         """Register all tools with the MCP server."""
         
         @self.mcp.tool()
-        async def list_dir(directory_path: str, sort_by: str = "name", sort_order: str = "asc") -> Dict[str, Any]:
+        async def list_dir(
+            directory_path: str,
+            include_pattern: Optional[str] = None,
+            exclude_pattern: Optional[str] = None,
+            sort_by: str = "name",
+            sort_order: str = "asc"
+        ) -> Dict[str, Any]:
             """List directory contents."""
             tool = ListDirectoryTool()
             result = await tool.execute(
                 directory_path=directory_path,
-                sort_by=sort_by,
-                sort_order=sort_order
+                include_pattern=include_pattern,
+                exclude_pattern=exclude_pattern,
+                sort_by=sort_by
             )
-            return {"success": result.success, "data": result.data, "error": result.error}
+            return {
+                "success": result.success,
+                "data": result.data if result.success else None,
+                "error": result.error if not result.success else None
+            }
         
         @self.mcp.tool()
         async def find_by_name(search_path: str, pattern: str, recursive: bool = True) -> Dict[str, Any]:

@@ -1,3 +1,5 @@
+"""Example of using MCP server with LangChain."""
+
 from langchain.tools import BaseTool
 from typing import Type, ClassVar, Dict, Any
 from pydantic import BaseModel, Field
@@ -19,7 +21,6 @@ def build_mcp_tool_description(client: MCPClient) -> str:
     """
     try:
         print("Building dynamic tool description from MCP server...")
-        # Use asyncio.run to execute the async method from a sync context
         tools: list[ToolDefinition] = asyncio.run(client.list_tools())
         
         description_parts = [
@@ -35,65 +36,46 @@ def build_mcp_tool_description(client: MCPClient) -> str:
                 for param in tool.parameters:
                     param_type = getattr(param, 'type', 'string')
                     required_str = "required" if param.required else "optional"
-                    # Use a clean format the LLM can easily parse
-                    description_parts.append(f"    - {param.name} ({param.parameter_type}, {required_str})")
+                    description_parts.append(f"    - {param.name} ({param_type}, {required_str})")
                     if param.description:
-                        description_parts.append(": {param.description}")
+                        description_parts.append(f"      {param.description}")
             else:
                 description_parts.append("  Parameters: None")
-            description_parts.append("") # Add a blank line for readability
+            description_parts.append("")
 
         final_description = "\n".join(description_parts)
         print("Successfully built tool description.")
         return final_description
     except Exception as e:
         print(f"Error building tool description: {e}. Using a fallback.")
-        return "A gateway to interact with the MCP server. You must provide a 'tool_name' and a 'parameters' dictionary. Example tools: 'list_dir', 'find_by_name'."
+        return "A gateway to interact with the MCP server. You must provide a 'tool_name' and a 'parameters' dictionary."
 
-# 1. Define the input schema for your tool. This is what the agent will see.
 class MCPToolInput(BaseModel):
     """Input model for the CustomMCPTool."""
-    tool_name: str = Field(..., description="The name of the MCP tool to execute (e.g., 'list_dir', 'find_by_name').")
-    parameters: Dict[str, Any] = Field(default_factory=dict,
-                                       description="A dictionary of parameters for the specified tool.")
-
+    tool_name: str = Field(..., description="The name of the MCP tool to execute.")
+    parameters: Dict[str, Any] = Field(..., description="A dictionary of parameters for the specified tool.")
 
 class CustomMCPTool(BaseTool):
-    # Use simple class attributes for name and description
     name: str = "mcp_tool"
     description: str = "A gateway to interact with the MCP server."
     args_schema: Type[BaseModel] = MCPToolInput
 
-    # 2. Assign the Pydantic model as the args_schema. THIS IS THE KEY.
-    args_schema: Type[BaseModel] = MCPToolInput
-
-    # 3. Update the method signature to accept keyword arguments
-    def _run(self, tool_name: str, parameters: Dict[str, Any] = None) -> str:
+    def _run(self, tool_name: str, parameters: Dict[str, Any]) -> str:
         """Synchronous execution of the MCP tool."""
-        # The agent will now call this with tool_name="...", parameters={...}
-        if parameters is None:
-            parameters = {}
-
         print(f"\n[DEBUG] _run received: tool_name='{tool_name}', parameters={parameters}")
 
-        # Your existing async logic works well here
         async def async_run():
             client = MCPClient("http://localhost:8000/sse")
             result = await client.invoke_tool(tool_name, parameters)
-            # Ensure the result is always a string for LangChain
             return str(result.content) if result else "No content returned from tool."
 
         try:
-            # Use asyncio.run() to execute the async function
             return asyncio.run(async_run())
         except Exception as e:
             return f"Error running async tool: {e}"
 
-    async def _arun(self, tool_name: str, parameters: Dict[str, Any] = None) -> str:
+    async def _arun(self, tool_name: str, parameters: Dict[str, Any]) -> str:
         """Asynchronous execution of the MCP tool."""
-        if parameters is None:
-            parameters = {}
-
         print(f"\n[DEBUG] _arun received: tool_name='{tool_name}', parameters={parameters}")
 
         client = MCPClient("http://localhost:8000/sse")
@@ -132,7 +114,7 @@ if __name__ == "__main__":
 # Initialize components
 llm = OllamaLLM(
     base_url="http://localhost:11434",
-    model="llama3",
+    model="gemma3",
     temperature=0.7
 )
 
@@ -142,6 +124,63 @@ memory = ConversationBufferMemory(
     return_messages=True,
     output_key="output"
 )
+
+# AgentType Options and Their Use Cases:
+# -------------------------------------
+# 1. ZERO_SHOT_REACT_DESCRIPTION
+#    - Basic agent using ReAct (Reason + Act) format
+#    - No memory/context between calls
+#    - Each response is independent
+#    - Uses "Thought", "Action", "Observation" format
+#    - Best for: Simple, stateless tasks
+#    - Not ideal for: Conversations requiring context
+#
+# 2. STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION (current)
+#    - Enhanced zero-shot with structured output
+#    - Enforces strict output format
+#    - Uses "Thought", "Action", "Observation" format
+#    - Best for: When you need consistent, structured outputs
+#    - Not ideal for: Free-form conversations
+#
+# 3. CHAT_CONVERSATIONAL_REACT_DESCRIPTION
+#    - Chat-focused agent with memory
+#    - Maintains conversation history
+#    - Uses chat format instead of ReAct
+#    - Best for: Conversational interfaces
+#    - Not ideal for: Strict output formatting
+#
+# 4. SELF_ASK_WITH_SEARCH
+#    - Agent that can ask itself questions and search
+#    - Uses "Question", "Answer" format
+#    - Good at research and fact-finding
+#    - Best for: Research tasks
+#    - Not ideal for: Direct tool execution
+#
+# 5. PLAN_AND_EXECUTE
+#    - Agent that plans before executing
+#    - Creates a plan before taking action
+#    - Good at breaking down complex tasks
+#    - Best for: Complex multi-step tasks
+#    - Not ideal for: Simple tool calls
+#
+# 6. OPENAI_FUNCTIONS
+#    - Specialized for OpenAI's function calling
+#    - Uses OpenAI's function calling format
+#    - Very good at following function schemas
+#    - Best for: OpenAI models with function calling
+#    - Not ideal for: Non-OpenAI models
+#
+# 7. OPENAI_MULTI_FUNCTIONS
+#    - Enhanced version of OpenAI functions
+#    - Can handle multiple function calls
+#    - Better at complex reasoning
+#    - Best for: Complex tasks with multiple functions
+#    - Not ideal for: Simple tool calls
+#
+# For MCP tool execution, recommended options:
+# 1. OPENAI_FUNCTIONS/MULTI_FUNCTIONS: Best for strict function schemas
+# 2. CHAT_CONVERSATIONAL_REACT_DESCRIPTION: Best for natural conversation
+# 3. ZERO_SHOT_REACT_DESCRIPTION: Best for simple tool calls without ReAct format
 
 # Create agent with return_intermediate_steps
 agent = initialize_agent(
@@ -153,20 +192,19 @@ agent = initialize_agent(
     return_intermediate_steps=True,
     memory=memory,
     system_message=SystemMessage(content="""You are an AI assistant that helps users interact with the MCP server tools.
-
 ⚠️ CRITICAL: You MUST provide the input in this EXACT format:
 {
-    "tool_name": "list_dir",
+    "tool_name": "<tool_name>",
     "parameters": {
-        "directory_path": ".",
-        "sort_by": "name",
-        "sort_order": "asc"
+        "<param1>": "<value1>",
+        "<param2": "<value2>",
+        "<param3>": "<value3>"
     }
 }
+⚠️ CRITICAL: Use only specified parameter names
 
-❌ DO NOT wrap the input in an "action" or "action_input" object
-❌ DO NOT leave the parameters dictionary empty
-❌ DO NOT omit required parameters
+❌ DO NOT skip required parameters
+❌ DO NOT substitute parameter names
 
 ✅ COMPLETE EXAMPLE:
 User: List the contents of the current directory
@@ -199,10 +237,15 @@ Assistant: I'll use the list_dir tool to show the contents of the root directory
         "parameters": {}
     }
 }
-
 {
     "tool_name": "list_dir",
     "parameters": {}
+}
+                                 {
+    "tool_name": "list_dir",
+    "parameters": {
+        "path": "/"
+    }
 }
 
 IMPORTANT RULES:
@@ -255,7 +298,7 @@ if __name__ == "__main__":
         )
         print(f"\nDirect tool test result: {result}")
         
-        # Now try through the agent - this should now work!
+        # Now try through the agent
         print("\nTrying through agent...")
         response = agent.invoke({
             "input": "List the contents of the current directory using the list_dir tool. Use '.' for the directory path."
@@ -272,12 +315,10 @@ if __name__ == "__main__":
             for step in response["intermediate_steps"]:
                 action, observation = step
                 print(f"\nAction taken: {action.tool}")
-                # action.tool_input is already a dict, so we can dump it
                 print(f"Action input: {json.dumps(action.tool_input, indent=2)}")
                 print(f"Tool response: {observation}")
         else:
             print("No intermediate steps in response.")
-            # Print response in a more readable format
             print("\nResponse contents:")
             for key, value in response.items():
                 if key == "chat_history":
