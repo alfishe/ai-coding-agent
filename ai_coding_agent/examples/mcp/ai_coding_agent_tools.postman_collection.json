@@ -1,0 +1,731 @@
+{
+	"info": {
+		"_postman_id": "your-collection-id",
+		"name": "AI Coding Agent Tools",
+		"description": "Collection for testing AI Coding Agent tools via MCP interface",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Server Info",
+			"item": [
+				{
+					"name": "List Available Tools",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/tools",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8000",
+							"path": ["tools"]
+						},
+						"description": "Get a list of all available tools and their descriptions"
+					}
+				},
+				{
+					"name": "Get Tool Info",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/tools/list_dir",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8000",
+							"path": ["tools", "list_dir"]
+						},
+						"description": "Get detailed information about a specific tool"
+					}
+				}
+			]
+		},
+		{
+			"name": "List Directory",
+			"item": [
+				{
+					"name": "Basic Directory Listing (Default Sort)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"directory_path\": \".\",\n  \"sort_by\": \"type\",\n  \"sort_order\": \"asc\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/tools/list_dir",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8000",
+							"path": ["tools", "list_dir"]
+						},
+						"description": "List directory contents with default sorting (folders first, then files, both alphabetically)"
+					}
+				},
+				{
+					"name": "Sort by Name",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"directory_path\": \".\",\n  \"sort_by\": \"name\",\n  \"sort_order\": \"asc\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/tools/list_dir",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8000",
+							"path": ["tools", "list_dir"]
+						},
+						"description": "Sort all items alphabetically by name"
+					}
+				},
+				{
+					"name": "Sort by Size (Descending)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"directory_path\": \".\",\n  \"sort_by\": \"size\",\n  \"sort_order\": \"desc\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/tools/list_dir",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8000",
+							"path": ["tools", "list_dir"]
+						},
+						"description": "Sort by file size (largest first), directories at the end"
+					}
+				},
+				{
+					"name": "Sort by Last Modified",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"directory_path\": \".\",\n  \"sort_by\": \"modified\",\n  \"sort_order\": \"desc\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/tools/list_dir",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8000",
+							"path": ["tools", "list_dir"]
+						},
+						"description": "Sort by last modified time (newest first)"
+					}
+				},
+				{
+					"name": "Recursive Listing with Sorting",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"directory_path\": \".\",\n  \"recursive\": true,\n  \"max_depth\": 2,\n  \"sort_by\": \"type\",\n  \"sort_order\": \"asc\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/tools/list_dir",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8000",
+							"path": ["tools", "list_dir"]
+						},
+						"description": "Recursive listing with default sorting (folders first, then files)"
+					}
+				},
+				{
+					"name": "Paginated Results with Sorting",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"directory_path\": \".\",\n  \"page\": 1,\n  \"page_size\": 10,\n  \"sort_by\": \"type\",\n  \"sort_order\": \"asc\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/tools/list_dir",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8000",
+							"path": ["tools", "list_dir"]
+						},
+						"description": "Paginated results with default sorting"
+					}
+				},
+				{
+					"name": "Full Recursive with Hidden Files and Sorting",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"directory_path\": \".\",\n  \"recursive\": true,\n  \"include_hidden\": true,\n  \"sort_by\": \"type\",\n  \"sort_order\": \"asc\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/tools/list_dir",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8000",
+							"path": ["tools", "list_dir"]
+						},
+						"description": "Full recursive listing including hidden files, with default sorting"
+					}
+				}
+			]
+		},
+		{
+			"name": "Find by Name",
+			"item": [
+				{
+					"name": "Find Files by Pattern",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"search_directory\": \".\",\n  \"pattern\": \"*.py\",\n  \"type\": \"file\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/tools/find_by_name",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8000",
+							"path": ["tools", "find_by_name"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Grep Search",
+			"item": [
+				{
+					"name": "Search in Files - Basic",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"search_path\": \".\",\n  \"query\": \"class\",\n  \"case_insensitive\": true\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/tools/grep_search",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8000",
+							"path": ["tools", "grep_search"]
+						},
+						"description": "Basic search for 'class' keyword in all files"
+					}
+				},
+				{
+					"name": "Search in Python Files",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"search_path\": \".\",\n  \"query\": \"async def\",\n  \"case_insensitive\": false,\n  \"include_pattern\": \"*.py\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/tools/grep_search",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8000",
+							"path": ["tools", "grep_search"]
+						},
+						"description": "Search for async functions in Python files only"
+					}
+				},
+				{
+					"name": "Search with Exclude Pattern",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"search_path\": \".\",\n  \"query\": \"TODO|FIXME\",\n  \"case_insensitive\": true,\n  \"exclude_pattern\": \"*.pyc|__pycache__|.git\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/tools/grep_search",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8000",
+							"path": ["tools", "grep_search"]
+						},
+						"description": "Search for TODO/FIXME comments, excluding binary and cache files"
+					}
+				},
+				{
+					"name": "Search in Specific Directory",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"search_path\": \"src/core\",\n  \"query\": \"BaseTool\",\n  \"case_insensitive\": false,\n  \"include_pattern\": \"*.py\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/tools/grep_search",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8000",
+							"path": ["tools", "grep_search"]
+						},
+						"description": "Search for BaseTool class in core module"
+					}
+				},
+				{
+					"name": "Search with Complex Pattern",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"search_path\": \".\",\n  \"query\": \"def\\s+\\w+\\s*\\([^)]*\\)\\s*->\\s*\\w+\",\n  \"case_insensitive\": false,\n  \"include_pattern\": \"*.py\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/tools/grep_search",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8000",
+							"path": ["tools", "grep_search"]
+						},
+						"description": "Search for type-hinted function definitions using regex"
+					}
+				}
+			]
+		},
+		{
+			"name": "File Operations",
+			"item": [
+				{
+					"name": "View File Contents",
+					"item": [
+						{
+							"name": "View Text File",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"tool_name\": \"view_file\",\n  \"parameters\": {\n    \"file_path\": \"README.md\",\n    \"start_line\": 1,\n    \"end_line\": 10,\n    \"include_summary\": true\n  }\n}"
+								},
+								"url": {
+									"raw": "http://localhost:8000/tools/view_file",
+									"protocol": "http",
+									"host": ["localhost"],
+									"port": "8000",
+									"path": ["tools", "view_file"]
+								},
+								"description": "View text file contents with line numbers and summary"
+							}
+						},
+						{
+							"name": "View Binary File (PDF)",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"tool_name\": \"view_file\",\n  \"parameters\": {\n    \"file_path\": \"/Users/dev/Projects/Test/ai-agent2/ai_coding_agent/docs/example.pdf\"\n  }\n}"
+								},
+								"url": {
+									"raw": "http://localhost:8000/tools/view_file",
+									"protocol": "http",
+									"host": ["localhost"],
+									"port": "8000",
+									"path": ["tools", "view_file"]
+								},
+								"description": "View binary file (PDF) information - returns file metadata instead of content"
+							}
+						}
+					]
+				},
+				{
+					"name": "Edit File",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"target_file\": \"example.py\",\n  \"instructions\": \"Add a new function that prints hello world\",\n  \"code_edit\": \"def hello_world():\\n    print('Hello, World!')\\n\\nhello_world()\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/tools/edit_file",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8000",
+							"path": ["tools", "edit_file"]
+						}
+					}
+				},
+				{
+					"name": "Delete File",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"target_file\": \"temp.txt\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/tools/delete_file",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8000",
+							"path": ["tools", "delete_file"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Search Operations",
+			"item": [
+				{
+					"name": "Semantic Code Search",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"tool_name\": \"semantic_search\",\n  \"parameters\": {\n    \"query\": \"Find all async functions\",\n    \"workspace_path\": \"/Users/dev/Projects/Test/ai-agent2\",\n    \"language\": \"python\",\n    \"symbol_kind\": \"function\"\n  }\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/tools/semantic_search",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8000",
+							"path": ["tools", "semantic_search"]
+						},
+						"description": "Search for code using semantic queries via LSP"
+					}
+				},
+				{
+					"name": "Get Symbol Info",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"tool_name\": \"symbol_info\",\n  \"parameters\": {\n    \"file_path\": \"/Users/dev/Projects/Test/ai-agent2/ai_coding_agent/src/ai_coding_agent/core/lsp_tools.py\",\n    \"position\": {\n      \"line\": 50,\n      \"character\": 10\n    },\n    \"language\": \"python\"\n  }\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/tools/symbol_info",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8000",
+							"path": ["tools", "symbol_info"]
+						},
+						"description": "Get detailed information about a code symbol"
+					}
+				},
+				{
+					"name": "Code Navigation",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"tool_name\": \"code_navigation\",\n  \"parameters\": {\n    \"file_path\": \"/Users/dev/Projects/Test/ai-agent2/ai_coding_agent/src/ai_coding_agent/core/lsp_tools.py\",\n    \"position\": {\n      \"line\": 50,\n      \"character\": 10\n    },\n    \"language\": \"python\",\n    \"action\": \"definition\"\n  }\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/tools/code_navigation",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8000",
+							"path": ["tools", "code_navigation"]
+						},
+						"description": "Navigate code using LSP features"
+					}
+				},
+				{
+					"name": "Fuzzy File Search",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"config\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/tools/file_search",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8000",
+							"path": ["tools", "file_search"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Terminal Operations",
+			"item": [
+				{
+					"name": "Run Command",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"command\": \"ls -la\",\n  \"is_background\": false,\n  \"require_user_approval\": true\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/tools/run_terminal_cmd",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8000",
+							"path": ["tools", "run_terminal_cmd"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Action Queue",
+			"item": [
+				{
+					"name": "Push Action",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"tool_name\": \"push_action\",\n  \"parameters\": {\n    \"tool_name\": \"list_dir\",\n    \"parameters\": {\n      \"directory_path\": \".\",\n      \"sort_by\": \"type\",\n      \"sort_order\": \"asc\"\n    }\n  }\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/tools/push_action",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8000",
+							"path": ["tools", "push_action"]
+						},
+						"description": "Push an action to the FIFO queue"
+					}
+				},
+				{
+					"name": "Show Actions",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"tool_name\": \"show_actions\",\n  \"parameters\": {}\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/tools/show_actions",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8000",
+							"path": ["tools", "show_actions"]
+						},
+						"description": "Show all actions in the FIFO queue"
+					}
+				},
+				{
+					"name": "Get Next Action",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"tool_name\": \"get_next_action\",\n  \"parameters\": {}\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/tools/get_next_action",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8000",
+							"path": ["tools", "get_next_action"]
+						},
+						"description": "Get and remove the next action from the FIFO queue"
+					}
+				},
+				{
+					"name": "Clear Actions",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"tool_name\": \"clear_actions\",\n  \"parameters\": {}\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/tools/clear_actions",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8000",
+							"path": ["tools", "clear_actions"]
+						},
+						"description": "Clear all actions from the FIFO queue"
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		}
+	]
+} 
